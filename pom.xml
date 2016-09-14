@@ -1,23 +1,11 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
-    <groupId>com.kagurabi.example</groupId>
-    <artifactId>Kagura-example-javascript</artifactId>
+    <groupId>com.kagurabi</groupId>
+    <artifactId>kagura-example-javascript</artifactId>
     <packaging>war</packaging>
     <version>1.10-SNAPSHOT</version>
-    <name>Kagura Javascript Example</name>
-
-    <dependencyManagement>
-        <dependencies>
-            <dependency>
-                <groupId>com.kagurabi</groupId>
-                <artifactId>Kagura-bom</artifactId>
-                <version>1.10-SNAPSHOT</version>
-                <scope>import</scope>
-                <type>pom</type>
-            </dependency>
-        </dependencies>
-    </dependencyManagement>
+    <name>kagura-example-javascript</name>
 
     <repositories>
         <repository>
@@ -29,6 +17,46 @@
             <url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
         </repository>
     </repositories>
+
+    <licenses>
+        <license>
+            <name>The Apache Software License, Version 2.0</name>
+            <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+            <distribution>repo</distribution>
+        </license>
+    </licenses>
+
+    <distributionManagement>
+        <snapshotRepository>
+            <id>ossrh</id>
+            <url>https://oss.sonatype.org/content/repositories/snapshots</url>
+        </snapshotRepository>
+        <repository>
+            <id>ossrh</id>
+            <url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
+        </repository>
+    </distributionManagement>
+
+    <developers>
+        <developer>
+            <id>Arran</id>
+            <name>Arran Ubels</name>
+            <email>arran@kagurabi.com</email>
+            <url>http://www.base2services.com/about/team.html</url>
+            <organization>base2Services</organization>
+            <organizationUrl>http://www.base2services.com/</organizationUrl>
+            <roles>
+                <role>developer</role>
+            </roles>
+            <timezone>+10</timezone>
+        </developer>
+    </developers>
+
+    <scm>
+        <connection>scm:git:git@github.com:kagura/kagura-example-javascript.git</connection>
+        <developerConnection>scm:git:git@github.com:kagura/kagura-example-javascript.git</developerConnection>
+        <url>git@github.com:kagura/kagura-example-javascript.git</url>
+    </scm>
 
     <dependencies>
         <dependency>
@@ -44,19 +72,19 @@
         <dependency>
             <groupId>org.eclipse.jetty.orbit</groupId>
             <artifactId>javax.servlet</artifactId>
-            <version>2.5.0.v201103041518</version>
+            <version>${javax.servlet.version}</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
-            <version>3.8.1</version>
+            <version>${junit.version}</version>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>javax.servlet.jsp</groupId>
             <artifactId>jsp-api</artifactId>
-            <version>2.2</version>
+            <version>${jsp-api.version}</version>
             <scope>provided</scope>
         </dependency>
     </dependencies>
@@ -65,7 +93,14 @@
         <!--<jetty-server.version>7.6.8.v20121106</jetty-server.version> Karaf version -->
         <!--<jetty-server.version>8.1.7.v20120910</jetty-server.version> CXF version -->
         <jetty-server.version>8.1.12.v20130726</jetty-server.version>
+        <java.version>1.8</java.version>
+        <javax.servlet.version>2.5.0.v201103041518</javax.servlet.version>
+        <junit.version>3.8.1</junit.version>
+        <jsp-api.version>2.2</jsp-api.version>
+        <exec-maven-plugin.version>1.1</exec-maven-plugin.version>
+        <maven-gpg-plugin.version>1.5</maven-gpg-plugin.version>
     </properties>
+
     <build>
         <finalName>javascript</finalName>
         <plugins>
@@ -92,7 +127,7 @@
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>exec-maven-plugin</artifactId>
-                <version>1.1</version>
+                <version>${exec-maven-plugin.version}</version>
                 <executions>
                     <execution><goals><goal>java</goal></goals></execution>
                 </executions>
@@ -113,9 +148,48 @@
                     <!--</execution>-->
                 <!--</executions>-->
             <!--</plugin>-->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>${maven-compiler-plugin.version}</version>
+                <configuration>
+                    <source>${java.version}</source>
+                    <target>${java.version}</target>
+                </configuration>
+            </plugin>
         </plugins>
     </build>
     <profiles>
+        <!-- Jenkins by default defines a property BUILD_NUMBER which is used to enable the profile. -->
+        <profile>
+            <id>jenkins</id>
+            <activation>
+                <property>
+                    <name>env.BUILD_NUMBER</name>
+                </property>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.codehaus.mojo</groupId>
+                        <artifactId>cobertura-maven-plugin</artifactId>
+                        <configuration>
+                            <formats>
+                                <format>xml</format>
+                            </formats>
+                        </configuration>
+                        <executions>
+                            <execution>
+                                <phase>package</phase>
+                                <goals>
+                                    <goal>cobertura</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
         <!-- PGP singing profile for releases -->
         <profile>
             <id>release-sign-artifacts</id>
@@ -131,7 +205,7 @@
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-gpg-plugin</artifactId>
-                        <version>1.5</version>
+                        <version>${maven-gpg-plugin.version}</version>
                         <executions>
                             <execution>
                                 <id>sign-artifacts</id>
